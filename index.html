@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J&H · Calculadora de Precificação</title>
+
+
+<style>
+:root {
+  --black:   #0E0E0E;
+  --dark:    #1A1A1A;
+  --mid:     #2E2E2E;
+  --gray:    #555555;
+  --gray-lt: #888888;
+  --border:  #D4D4D4;
+  --bg:      #F2F2F2;
+  --bg-lt:   #FAFAFA;
+  --white:   #FFFFFF;
+  --ff-d: 'Georgia', 'Times New Roman', serif;
+  --ff-m: 'Courier New', 'Lucida Console', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: var(--ff-m);
+  color: var(--black);
+  min-height: 100vh;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--black);
+  padding: 0 2.5rem;
+  display: flex;
+  align-items: stretch;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 54px;
+}
+.header-brand {
+  display: flex; align-items: center; gap: 1.25rem;
+  border-right: 1px solid #2a2a2a;
+  padding-right: 1.25rem; margin-right: 1.25rem;
+}
+.header-logo {
+  font-family: var(--ff-d); font-size: 1.2rem; font-weight: 900;
+  color: var(--white); letter-spacing: -0.02em;
+}
+.header-sub { font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 0.12em; }
+.header-actions { margin-left: auto; display: flex; gap: 0.5rem; align-items: center; }
+
+/* ── LAYOUT ── */
+.app {
+  display: grid;
+  grid-template-columns: 1fr 390px;
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.75rem 2rem 6rem;
+}
+
+/* ── CARDS ── */
+.card { background: var(--white); border: 1px solid var(--border); margin-bottom: 1rem; }
+.card-head {
+  background: var(--dark); padding: 0.65rem 1.25rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-head h2 {
+  font-family: var(--ff-d); font-size: 0.9rem; font-weight: 700;
+  color: var(--white); letter-spacing: -0.01em;
+}
+.card-tag { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+
+/* ── ROWS ── */
+.row {
+  display: grid; align-items: center;
+  padding: 0.5rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  gap: 0.75rem; transition: background 0.1s;
+}
+.row:last-child { border-bottom: none; }
+.row:hover { background: var(--bg); }
+
+.sec-label {
+  font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--gray-lt); padding: 0.45rem 1.25rem 0.3rem;
+  background: var(--bg); border-bottom: 1px solid var(--border);
+}
+
+/* ── ESCOPO ── */
+.escopo-row { grid-template-columns: 1fr 80px 26px; }
+.escopo-select {
+  font-family: var(--ff-m); font-size: 0.72rem; color: var(--black);
+  background: transparent; border: none; width: 100%;
+  cursor: pointer; outline: none; -webkit-appearance: none; padding: 0.15rem 0;
+}
+.escopo-select:focus { color: var(--gray); }
+.escopo-dias { font-size: 0.7rem; color: var(--gray-lt); text-align: right; }
+.remove-btn {
+  width: 20px; height: 20px; border: none; background: none;
+  color: var(--gray-lt); cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center; transition: all 0.1s;
+}
+.remove-btn:hover { background: #f0f0f0; color: var(--black); }
+.add-btn {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 1.25rem;
+  font-family: var(--ff-m); font-size: 0.68rem;
+  color: var(--gray); background: none; border: none;
+  cursor: pointer; width: 100%; transition: background 0.1s;
+}
+.add-btn:hover { background: var(--bg); color: var(--black); }
+.add-btn::before { content: "+"; font-size: 0.9rem; }
+
+/* ── CHECKBOX ── */
+.checkbox {
+  width: 15px; height: 15px; border: 1.5px solid var(--border);
+  cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; transition: all 0.1s;
+}
+.checkbox.checked { background: var(--black); border-color: var(--black); }
+.checkbox.checked::after { content: "✓"; color: var(--white); font-size: 0.6rem; font-weight: bold; }
+
+/* ── SQUAD ── */
+.squad-row { grid-template-columns: 15px 1fr 80px 90px; }
+.setor-badge {
+  display: inline-block; font-size: 0.54rem; text-transform: uppercase;
+  letter-spacing: 0.07em; padding: 1px 5px; border: 1px solid var(--border);
+  color: var(--gray); margin-top: 1px;
+}
+
+/* ── PARCEIROS ── */
+.parceiro-row { grid-template-columns: 15px 1fr 80px; }
+
+/* ── MULTIPLICADORES ── */
+.mult-row {
+  display: grid; grid-template-columns: 160px 1fr;
+  gap: 0; padding: 0; border-bottom: 1px solid var(--border);
+}
+.mult-row:last-child { border-bottom: none; }
+.mult-label {
+  padding: 0.6rem 1rem; font-size: 0.65rem; color: var(--gray);
+  border-right: 1px solid var(--border);
+  display: flex; align-items: center; line-height: 1.4;
+}
+.mult-options { display: flex; align-items: stretch; }
+.mult-opt {
+  flex: 1; padding: 0.4rem 0.25rem;
+  font-family: var(--ff-m); font-size: 0.58rem; text-align: center;
+  cursor: pointer; border-right: 1px solid var(--border);
+  color: var(--gray-lt); background: var(--white); transition: all 0.1s;
+  line-height: 1.3; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px;
+}
+.mult-opt:last-child { border-right: none; }
+.mult-opt:hover { background: var(--bg); color: var(--black); }
+.mult-opt.selected { background: var(--black); color: var(--white); }
+.mult-opt.selected.discount { background: var(--mid); }
+.mult-x { font-family: var(--ff-d); font-size: 0.78rem; font-weight: 700; display: block; }
+
+/* ── FATOR BREAKDOWN ── */
+.fator-breakdown {
+  padding: 0.6rem 1.25rem;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  font-size: 0.62rem;
+  color: var(--gray-lt);
+  line-height: 1.8;
+}
+.fator-breakdown strong { color: var(--black); font-size: 0.72rem; }
+
+/* ── PROJ INPUT ── */
+.proj-wrap { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1.25rem; }
+.proj-wrap label { font-size: 0.68rem; color: var(--gray); flex: 1; }
+.proj-input {
+  font-family: var(--ff-m); font-size: 0.82rem; font-weight: 500;
+  color: var(--black); background: transparent;
+  border: 1px solid var(--border); padding: 3px 8px;
+  width: 56px; text-align: center; outline: none;
+}
+.proj-input:focus { border-color: var(--black); }
+
+/* ── DIAS DISPLAY ── */
+.dias-display {
+  padding: 0.85rem 1.25rem; background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: baseline; gap: 0.5rem;
+}
+.dias-num { font-family: var(--ff-d); font-size: 2rem; font-weight: 900; color: var(--black); line-height: 1; }
+.dias-lbl { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray-lt); }
+
+/* ── OBS INPUT ── */
+.obs-wrap { padding: 0.6rem 1.25rem; border-top: 1px solid var(--border); }
+.obs-wrap label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-lt); display: block; margin-bottom: 0.3rem; }
+.obs-input {
+  font-family: var(--ff-m); font-size: 0.7rem; color: var(--black);
+  background: transparent; border: none; border-bottom: 1px solid var(--border);
+  padding: 2px 0; width: 100%; outline: none; resize: none;
+}
+.obs-input:focus { border-color: var(--black); }
+
+/* ── RIGHT PANEL ── */
+.right-panel { position: sticky; top: 70px; align-self: start; }
+.result-card { background: var(--white); border: 1px solid var(--border); }
+
+.result-head { background: var(--black); padding: 1rem 1.25rem 0.85rem; }
+.result-head h2 {
+  font-family: var(--ff-d); font-size: 1rem; font-weight: 900;
+  color: var(--white); letter-spacing: -0.02em; margin-bottom: 0.5rem;
+}
+.cliente-input {
+  font-family: var(--ff-m); font-size: 0.72rem;
+  color: rgba(255,255,255,0.55); background: transparent;
+  border: none; border-bottom: 1px solid #333;
+  padding: 2px 0; width: 100%; outline: none;
+}
+.cliente-input::placeholder { color: #444; }
+.cliente-input:focus { border-color: #555; color: rgba(255,255,255,0.8); }
+
+/* Price suggestion */
+.price-suggested {
+  padding: 1rem 1.25rem 0.75rem; background: var(--black);
+  border-bottom: 1px solid #222;
+}
+.price-suggested-lbl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin-bottom: 0.3rem; }
+.price-suggested-val { font-family: var(--ff-d); font-size: 2rem; font-weight: 900; color: var(--white); }
+.price-fator { font-size: 0.65rem; color: #666; display: block; margin-top: 0.15rem; }
+
+/* Piso alerta */
+.piso-bar {
+  padding: 0.4rem 1.25rem;
+  font-size: 0.62rem; color: var(--gray-lt);
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.piso-bar.danger { background: #1a1a1a; color: #f08080; }
+.piso-bar.danger strong { color: #f08080; }
+
+/* Override */
+.price-override { padding: 0.65rem 1.25rem; background: var(--bg); border-bottom: 1px solid var(--border); }
+.price-override-lbl { font-size: 0.58rem; color: var(--gray-lt); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem; }
+.price-override-input {
+  font-family: var(--ff-m); font-size: 0.9rem; font-weight: 500;
+  color: var(--gray); background: transparent; border: none; outline: none; width: 100%;
+}
+.price-override-input::placeholder { color: #ccc; }
+
+/* Margem */
+.margem-block {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border);
+  background: var(--black);
+}
+.margem-lbl { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.09em; color: #555; }
+.margem-val { font-family: var(--ff-d); font-size: 1.6rem; font-weight: 900; }
+.margem-val.ok  { color: #b0f0c0; }
+.margem-val.low { color: #f0e0a0; }
+.margem-val.neg { color: #f08080; }
+.margem-target { font-size: 0.6rem; color: #555; text-align: right; }
+.margem-target span { display: block; color: #888; font-size: 0.72rem; }
+
+/* Result rows */
+.r-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.48rem 1.25rem; border-bottom: 1px solid var(--border); gap: 1rem;
+}
+.r-row:last-child { border-bottom: none; }
+.r-lbl { font-size: 0.65rem; color: var(--gray); line-height: 1.35; }
+.r-lbl small { font-size: 0.58rem; color: var(--gray-lt); display: block; }
+.r-val { font-size: 0.76rem; color: var(--black); white-space: nowrap; font-weight: 500; }
+.r-val.muted { color: var(--gray-lt); font-weight: 400; }
+.r-val.big { font-family: var(--ff-d); font-size: 1.3rem; font-weight: 900; }
+.r-sec {
+  font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--gray-lt); padding: 0.4rem 1.25rem 0.2rem;
+  background: var(--bg); border-bottom: 1px solid var(--border);
+}
+.total-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.75rem 1.25rem; background: var(--dark); border-bottom: 1px solid var(--border);
+}
+.total-row .r-lbl { color: #888; font-size: 0.75rem; font-weight: 500; }
+.total-row .r-val { font-family: var(--ff-d); font-size: 1.3rem; font-weight: 900; color: var(--white); }
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--black); border-top: 1px solid #222;
+  padding: 0.85rem 2.5rem;
+  display: flex; align-items: center; justify-content: space-between; z-index: 200;
+}
+.b-item label { font-size: 0.54rem; text-transform: uppercase; letter-spacing: 0.1em; color: #444; display: block; margin-bottom: 0.15rem; }
+.b-val { font-family: var(--ff-d); font-size: 1rem; font-weight: 900; color: var(--white); }
+.b-val.big { font-size: 1.4rem; }
+.b-val.green { color: #8ef5a8; }
+.b-val.red   { color: #f59090; }
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: var(--ff-m); font-size: 0.63rem;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  padding: 0.5rem 1rem; border: none; cursor: pointer; transition: all 0.12s;
+}
+.btn-white { background: var(--white); color: var(--black); }
+.btn-white:hover { background: #e0e0e0; }
+.btn-ghost { background: transparent; color: #444; border: 1px solid #333; }
+.btn-ghost:hover { color: var(--white); border-color: #555; }
+
+/* ── TOOLTIP ── */
+.tooltip-wrap { position: relative; display: inline-block; }
+.tooltip-wrap .tip {
+  display: none; position: absolute; bottom: 125%; left: 50%;
+  transform: translateX(-50%); background: var(--dark); color: var(--white);
+  font-size: 0.62rem; padding: 5px 8px; white-space: nowrap;
+  border: 1px solid #333; z-index: 99;
+}
+.tooltip-wrap:hover .tip { display: block; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .app { grid-template-columns: 1fr; padding: 1rem; }
+  .right-panel { position: static; }
+  .header { padding: 0 1.25rem; }
+  .bottom-bar { padding: 0.85rem 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <div class="header-logo">J&H</div>
+    <div class="header-sub">Calculadora de Precificação · 2025</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="resetForm()">Limpar</button>
+    <button class="btn btn-white" onclick="gerarPDF()">↓ Exportar PDF</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- ═══ LEFT ═══ -->
+  <div>
+
+    <!-- ESCOPO -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Escopo de Projeto</h2>
+        <span class="card-tag">adicione os escopos</span>
+      </div>
+      <div class="dias-display">
+        <div class="dias-num" id="dias-total">0</div>
+        <div class="dias-lbl">dias totais de projeto</div>
+      </div>
+      <div id="escopos-list"></div>
+      <button class="add-btn" onclick="addEscopoRow()">Adicionar escopo</button>
+    </div>
+
+    <!-- PROJETOS EM ANDAMENTO -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Projetos em Andamento</h2>
+        <span class="card-tag">divisor de custo fixo</span>
+      </div>
+      <div class="proj-wrap">
+        <label>
+          Quantidade de projetos ativos agora
+          <span style="display:block;font-size:0.6rem;color:var(--gray-lt);margin-top:1px">
+            Infra + custos gerais são rateados entre todos os projetos
+          </span>
+        </label>
+        <input type="number" class="proj-input" id="proj-andamento" value="10" min="1" oninput="calcular()">
+      </div>
+    </div>
+
+    <!-- SQUAD -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Squad</h2>
+        <span class="card-tag">
+          quem está nesse job
+          <span class="tooltip-wrap" style="margin-left:6px;cursor:help">ⓘ
+            <span class="tip">Custo = (salário ÷ 22 dias úteis) × dias do projeto × 1,15 ÷ projetos em andamento</span>
+          </span>
+        </span>
+      </div>
+      <div id="squad-list"></div>
+    </div>
+
+    <!-- PARCEIROS -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Parceiros / Freelancers</h2>
+        <span class="card-tag">selecione se houver</span>
+      </div>
+      <div id="parceiros-list"></div>
+    </div>
+
+    <!-- MULTIPLICADORES -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Oportunidade de Valor</h2>
+        <span class="card-tag">calibra o preço sugerido</span>
+      </div>
+      <div id="mult-list"></div>
+      <div class="fator-breakdown" id="fator-breakdown">
+        Selecione os fatores acima para ver o breakdown.
+      </div>
+    </div>
+
+    <!-- OBSERVAÇÕES -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Observações</h2>
+        <span class="card-tag">aparece no PDF</span>
+      </div>
+      <div class="obs-wrap">
+        <label>Contexto do projeto / notas internas</label>
+        <textarea class="obs-input" id="obs-text" rows="3" placeholder="Ex: Cliente novo, vem por indicação do Fulano. Prazo apertado por lançamento em março…"></textarea>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ RIGHT ═══ -->
+  <div class="right-panel">
+    <div class="result-card">
+
+      <div class="result-head">
+        <h2>Precificação</h2>
+        <input class="cliente-input" id="cliente-nome" placeholder="Nome do cliente…" type="text">
+      </div>
+
+      <!-- Preço sugerido -->
+      <div class="price-suggested">
+        <div class="price-suggested-lbl">Preço Sugerido pelo Modelo</div>
+        <div class="price-suggested-val" id="r-preco-sug">R$ —</div>
+        <span class="price-fator" id="r-fator-badge"></span>
+      </div>
+
+      <!-- Piso de custo -->
+      <div class="piso-bar" id="piso-bar">
+        <span>Piso de custo (mínimo inegociável)</span>
+        <strong id="r-piso">R$ —</strong>
+      </div>
+
+      <!-- Override manual -->
+      <div class="price-override">
+        <div class="price-override-lbl">Ajuste manual — deixe em branco para usar o sugerido</div>
+        <input type="number" class="price-override-input" id="ticket-override"
+               placeholder="R$ 0,00" oninput="calcular()">
+      </div>
+
+      <!-- Margem -->
+      <div class="margem-block" id="margem-block">
+        <div>
+          <div class="margem-lbl">Margem Real</div>
+          <div class="margem-val" id="r-margem">—</div>
+        </div>
+        <div class="margem-target">
+          Meta<span id="r-margem-meta">25%</span>
+        </div>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="r-sec">receita</div>
+      <div class="r-row">
+        <span class="r-lbl">Ticket Final</span>
+        <span class="r-val" id="r-ticket">R$ —</span>
+      </div>
+      <div class="r-row">
+        <span class="r-lbl">Faturamento Líquido<small>após impostos (17,29%)</small></span>
+        <span class="r-val" id="r-fat-liq">R$ —</span>
+      </div>
+      <div class="r-row">
+        <span class="r-lbl">Lucro Real</span>
+        <span class="r-val" id="r-lucro">R$ —</span>
+      </div>
+
+      <div class="r-sec">mão de obra interna</div>
+      <div class="r-row"><span class="r-lbl">Estratégia</span><span class="r-val muted" id="r-mo-est">R$ —</span></div>
+      <div class="r-row"><span class="r-lbl">Design</span><span class="r-val muted" id="r-mo-des">R$ —</span></div>
+      <div class="r-row"><span class="r-lbl">Gestão</span><span class="r-val muted" id="r-mo-ges">R$ —</span></div>
+      <div class="r-row"><span class="r-lbl">Comercial</span><span class="r-val muted" id="r-mo-com">R$ —</span></div>
+
+      <div class="r-sec">estrutura</div>
+      <div class="r-row">
+        <span class="r-lbl">Infraestrutura<small>rateada por projetos em andamento</small></span>
+        <span class="r-val muted" id="r-infra">R$ —</span>
+      </div>
+      <div class="r-row">
+        <span class="r-lbl">Custos Gerais<small>rateados por projetos em andamento</small></span>
+        <span class="r-val muted" id="r-gerais">R$ —</span>
+      </div>
+
+      <div class="r-sec">externos</div>
+      <div class="r-row"><span class="r-lbl">Parceiros / Freelancers</span><span class="r-val muted" id="r-parceiros">R$ —</span></div>
+
+      <div class="r-sec">impostos e comissões</div>
+      <div class="r-row">
+        <span class="r-lbl">Imposto Simples Nacional<small>17,29% sobre o ticket</small></span>
+        <span class="r-val muted" id="r-imposto">R$ —</span>
+      </div>
+      <div class="r-row">
+        <span class="r-lbl">Comissão Caio Costa<small>7% sobre o ticket</small></span>
+        <span class="r-val muted" id="r-comissoes">R$ —</span>
+      </div>
+
+      <div class="total-row">
+        <span class="r-lbl">Custo Total do Projeto</span>
+        <span class="r-val big" id="r-custo-total" style="color:var(--white)">R$ —</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <div class="b-item">
+    <label>Dias Totais</label>
+    <div class="b-val" id="b-dias">— dias</div>
+  </div>
+  <div class="b-item">
+    <label>Custo Base</label>
+    <div class="b-val" id="b-custo-base">R$ —</div>
+  </div>
+  <div class="b-item">
+    <label>Fator de Valor</label>
+    <div class="b-val" id="b-fator">—×</div>
+  </div>
+  <div class="b-item">
+    <label>Custo Total</label>
+    <div class="b-val" id="b-custo">R$ —</div>
+  </div>
+  <div class="b-item">
+    <label>Margem</label>
+    <div class="b-val" id="b-margem">—</div>
+  </div>
+  <div class="b-item">
+    <label>Lucro Real</label>
+    <div class="b-val" id="b-lucro">R$ —</div>
+  </div>
+  <div class="b-item" style="text-align:right">
+    <label>Preço Final</label>
+    <div class="b-val big" id="b-ticket">R$ —</div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────
+const ESCOPOS = [
+  { nome: "Imersão e Diagnóstico",      dias: 20   },
+  { nome: "Naming",                     dias: 33   },
+  { nome: "Posicionamento Estratégico", dias: 33   },
+  { nome: "Identidade Visual",          dias: 49.5 },
+  { nome: "Packaging",                  dias: 30   },
+  { nome: "Apresentação Institucional", dias: 15   },
+  { nome: "Vídeo Institucional",        dias: 20   },
+  { nome: "Motion Design",              dias: 20   },
+  { nome: "Ilustração",                 dias: 15   },
+  { nome: "UX e UI",                    dias: 40   },
+  { nome: "Environmental Design",       dias: 30   },
+  { nome: "Produção e Implementação",   dias: 20   },
+];
+
+const SQUAD = [
+  { nome: "Gabriel Araújo",      setor: "Estratégia", salario: 9000  },
+  { nome: "Taciana Escandiel",   setor: "Estratégia", salario: 5000  },
+  { nome: "Donata Candalaft",    setor: "Estratégia", salario: 4500  },
+  { nome: "João Francisco Hack", setor: "Design",     salario: 60000 },
+  { nome: "Vicente Campos",      setor: "Design",     salario: 10000 },
+  { nome: "Tiago Berao",         setor: "Design",     salario: 8500  },
+  { nome: "Lucas Anicio",        setor: "Design",     salario: 5000  },
+  { nome: "Bruna Martins",       setor: "Design",     salario: 8000  },
+  { nome: "João Fellipe",        setor: "Design",     salario: 7500  },
+  { nome: "Ademar Vogel",        setor: "Design",     salario: 3500  },
+  { nome: "André Trois",         setor: "Gestão",     salario: 10000 },
+  { nome: "Bárbara Heinen",      setor: "Gestão",     salario: 6000  },
+  { nome: "Marilia Cini",        setor: "Gestão",     salario: 4000  },
+  { nome: "Julia Fagundes",      setor: "Gestão",     salario: 3000  },
+  { nome: "Franco Beck",         setor: "Gestão",     salario: 1250  },
+  { nome: "Caio Costa",          setor: "Comercial",  salario: 7000  },
+  { nome: "Gustavo",             setor: "Comercial",  salario: 5000  },
+];
+
+const PARCEIROS = [
+  { nome: "puLLsant",                  area: "Pesquisa",             valor: 15000 },
+  { nome: "Entrevistador (a)",          area: "Pesquisa",             valor: 2500  },
+  { nome: "Marcas Já",                 area: "Viabilidade Jurídica", valor: 1250  },
+  { nome: "Vagner Anjos",              area: "3D",                   valor: 2000  },
+  { nome: "Designer Gráfico - Pleno",  area: "Designer Gráfico",     valor: 4500  },
+  { nome: "Designer Gráfico - Sênior", area: "Designer Gráfico",     valor: 6000  },
+  { nome: "Motion Designer - Pleno",   area: "Motion Designer",      valor: 1200  },
+  { nome: "Motion Designer - Sênior",  area: "Motion Designer",      valor: 3000  },
+  { nome: "Marina Banker",             area: "Ilustração",           valor: 3500  },
+];
+
+// Multiplicadores baseados em literatura de agências criativas
+// Fonte: 101agencies.com, moveatpace.com, qwilr.com
+const MULTIPLICADORES = [
+  {
+    id: "tamanho",
+    label: "Tamanho do Cliente",
+    // Foundation 1×, Strategic 1.8–2.2×, Enterprise 3–4× (101agencies)
+    // Adaptado para contexto BR com teto conservador
+    opts: [
+      { label: "Startup",      x: 1.0  },
+      { label: "PME",          x: 1.3  },
+      { label: "Grande Porte", x: 1.7  },
+      { label: "Enterprise",   x: 2.2  },
+    ],
+    sel: 0,
+  },
+  {
+    id: "complexidade",
+    label: "Complexidade Estratégica",
+    // Baseado em value-based pricing: mesmo entregável, impacto diferente (moveatpace)
+    opts: [
+      { label: "Execução",         x: 1.0 },
+      { label: "Posicionamento",   x: 1.2 },
+      { label: "Reposicionamento", x: 1.4 },
+    ],
+    sel: 0,
+  },
+  {
+    id: "urgencia",
+    label: "Urgência / Prazo",
+    // Smart agencies calculam multipliers baseados em urgência (qwilr)
+    opts: [
+      { label: "Normal",    x: 1.0 },
+      { label: "Acelerado", x: 1.2 },
+      { label: "Urgente",   x: 1.5 },
+    ],
+    sel: 0,
+  },
+  {
+    id: "impacto",
+    label: "Impacto Estratégico",
+    // Trabalho que afeta receita, margens ou valuation do cliente (moveatpace)
+    opts: [
+      { label: "Pontual",          x: 1.0 },
+      { label: "Transformacional", x: 1.2 },
+    ],
+    sel: 0,
+  },
+  {
+    id: "stakeholders",
+    label: "Nº de Stakeholders",
+    // Mais decisores = mais esforço de gestão e aprovação (derivado de complexity pricing)
+    opts: [
+      { label: "Até 3",     x: 1.0 },
+      { label: "4 a 8",     x: 1.1 },
+      { label: "9 ou mais", x: 1.2 },
+    ],
+    sel: 0,
+  },
+  {
+    id: "exclusividade",
+    label: "Exclusividade de Categoria",
+    // Restringe portfólio, prêmio compensa limitação (qwilr)
+    opts: [
+      { label: "Não",  x: 1.0  },
+      { label: "Sim",  x: 1.15 },
+    ],
+    sel: 0,
+  },
+  {
+    id: "portfolio",
+    label: "Relevância para o Portfólio",
+    // "Portfolio Piece Premium" — desconto consciente em troca de case/prestígio (qwilr, trinityp3)
+    // Desconto é visível: equipe vê exatamente o quanto está deixando na mesa
+    opts: [
+      { label: "Baixa",       x: 1.0  },
+      { label: "Média",       x: 1.0  },
+      { label: "Alta",        x: 0.92 },
+      { label: "Excepcional", x: 0.85 },
+    ],
+    sel: 0,
+  },
+];
+
+const CFG = {
+  infra_mensal:  9128.20,
+  gerais_mensal: 19863.65,
+  aliquota:      0.1729,
+  comissao_caio: 0.07,
+  margem_dias:   0.15,   // 15% buffer conservador sobre dias trabalhados
+  dias_uteis:    22,
+  margem_alvo:   0.25,
+};
+
+// ── STATE ──────────────────────────────────────────────────────
+let escopoRows   = [];
+let squadSel     = new Set();
+let parceirosSel = new Set();
+
+// ── PERSIST (localStorage) ─────────────────────────────────────
+function salvarEstado() {
+  try {
+    localStorage.setItem('jh_pricing', JSON.stringify({
+      escopoRows,
+      squadSel: [...squadSel],
+      parceirosSel: [...parceirosSel],
+      mults: MULTIPLICADORES.map(m => m.sel),
+      projetos: document.getElementById('proj-andamento').value,
+      cliente: document.getElementById('cliente-nome').value,
+      override: document.getElementById('ticket-override').value,
+      obs: document.getElementById('obs-text').value,
+    }));
+  } catch(e) {}
+}
+
+function carregarEstado() {
+  try {
+    const s = localStorage.getItem('jh_pricing');
+    if (!s) return false;
+    const d = JSON.parse(s);
+    escopoRows = d.escopoRows || [];
+    squadSel   = new Set(d.squadSel || []);
+    parceirosSel = new Set(d.parceirosSel || []);
+    if (d.mults) d.mults.forEach((sel, i) => { if (MULTIPLICADORES[i]) MULTIPLICADORES[i].sel = sel; });
+    if (d.projetos) document.getElementById('proj-andamento').value = d.projetos;
+    if (d.cliente)  document.getElementById('cliente-nome').value   = d.cliente;
+    if (d.override) document.getElementById('ticket-override').value = d.override;
+    if (d.obs)      document.getElementById('obs-text').value        = d.obs;
+    return true;
+  } catch(e) { return false; }
+}
+
+// ── ESCOPOS ────────────────────────────────────────────────────
+function renderEscopos() {
+  const list = document.getElementById('escopos-list');
+  list.innerHTML = '';
+  escopoRows.forEach((row, i) => {
+    const div = document.createElement('div');
+    div.className = 'row escopo-row';
+    const dias = row.idx >= 0 ? ESCOPOS[row.idx].dias : null;
+    div.innerHTML = `
+      <select class="escopo-select" onchange="changeEscopo(${i}, this.value)">
+        <option value="-1">— selecionar escopo —</option>
+        ${ESCOPOS.map((e, idx) =>
+          `<option value="${idx}" ${idx === row.idx ? 'selected' : ''}>${e.nome}</option>`
+        ).join('')}
+      </select>
+      <div class="escopo-dias">${dias !== null ? dias + ' d' : '—'}</div>
+      <button class="remove-btn" onclick="removeEscopo(${i})" title="Remover">×</button>
+    `;
+    list.appendChild(div);
+  });
+  calcular();
+  salvarEstado();
+}
+
+function addEscopoRow()       { escopoRows.push({ idx: -1 }); renderEscopos(); }
+function removeEscopo(i)      { escopoRows.splice(i, 1); renderEscopos(); }
+function changeEscopo(i, val) { escopoRows[i].idx = parseInt(val); renderEscopos(); }
+
+// ── SQUAD ──────────────────────────────────────────────────────
+function renderSquad() {
+  const list = document.getElementById('squad-list');
+  const dias = getDias();
+  const projetos = parseInt(document.getElementById('proj-andamento').value) || 10;
+  const setores = [...new Set(SQUAD.map(s => s.setor))];
+  list.innerHTML = '';
+
+  setores.forEach(setor => {
+    const sec = document.createElement('div');
+    sec.className = 'sec-label';
+    sec.textContent = setor;
+    list.appendChild(sec);
+
+    SQUAD.filter(s => s.setor === setor).forEach(membro => {
+      const idx = SQUAD.indexOf(membro);
+      const checked = squadSel.has(idx);
+      const custoCalc = checked && dias > 0
+        ? fmt((membro.salario / CFG.dias_uteis) * dias * (1 + CFG.margem_dias) / projetos)
+        : '';
+
+      const div = document.createElement('div');
+      div.className = 'row squad-row';
+      div.style.cursor = 'pointer';
+      div.onclick = () => toggleSquad(idx);
+      div.innerHTML = `
+        <div class="checkbox ${checked ? 'checked' : ''}"></div>
+        <div>
+          <div style="font-size:0.72rem">${membro.nome}</div>
+          <span class="setor-badge">${membro.setor}</span>
+        </div>
+        <div style="font-size:0.65rem;color:var(--gray-lt);text-align:right">${fmt(membro.salario)}/mês</div>
+        <div style="font-size:0.65rem;color:var(--gray);text-align:right" id="custo-m-${idx}">${custoCalc}</div>
+      `;
+      list.appendChild(div);
+    });
+  });
+}
+
+function toggleSquad(idx) {
+  squadSel.has(idx) ? squadSel.delete(idx) : squadSel.add(idx);
+  renderSquad(); calcular(); salvarEstado();
+}
+
+// ── PARCEIROS ──────────────────────────────────────────────────
+function renderParceiros() {
+  const list = document.getElementById('parceiros-list');
+  list.innerHTML = '';
+  PARCEIROS.forEach((p, i) => {
+    const checked = parceirosSel.has(i);
+    const div = document.createElement('div');
+    div.className = 'row parceiro-row';
+    div.style.cursor = 'pointer';
+    div.onclick = () => toggleParceiro(i);
+    div.innerHTML = `
+      <div class="checkbox ${checked ? 'checked' : ''}"></div>
+      <div>
+        <div style="font-size:0.72rem">${p.nome}</div>
+        <div style="font-size:0.62rem;color:var(--gray-lt)">${p.area}</div>
+      </div>
+      <div style="font-size:0.68rem;color:var(--gray);text-align:right">${fmt(p.valor)}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function toggleParceiro(i) {
+  parceirosSel.has(i) ? parceirosSel.delete(i) : parceirosSel.add(i);
+  renderParceiros(); calcular(); salvarEstado();
+}
+
+// ── MULTIPLICADORES ────────────────────────────────────────────
+function renderMult() {
+  const list = document.getElementById('mult-list');
+  list.innerHTML = '';
+  MULTIPLICADORES.forEach((m, mi) => {
+    const div = document.createElement('div');
+    div.className = 'mult-row';
+    div.innerHTML = `
+      <div class="mult-label">${m.label}</div>
+      <div class="mult-options">
+        ${m.opts.map((opt, oi) => {
+          const isDiscount = opt.x < 1;
+          const isSel = m.sel === oi;
+          return `
+            <div class="mult-opt ${isSel ? 'selected' : ''} ${isSel && isDiscount ? 'discount' : ''}"
+                 onclick="selectMult(${mi}, ${oi})">
+              <span class="mult-x">${opt.x < 1 ? '−' : ''}${Math.abs((opt.x - 1) * 100).toFixed(0)}%</span>
+              ${opt.label}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    list.appendChild(div);
+  });
+  atualizarFatorBreakdown();
+}
+
+function selectMult(mi, oi) {
+  MULTIPLICADORES[mi].sel = oi;
+  renderMult(); calcular(); salvarEstado();
+}
+
+function getFatorValor() {
+  return MULTIPLICADORES.reduce((prod, m) => prod * m.opts[m.sel].x, 1);
+}
+
+function atualizarFatorBreakdown() {
+  const bd = document.getElementById('fator-breakdown');
+  const ativos = MULTIPLICADORES.filter(m => m.opts[m.sel].x !== 1.0);
+  if (ativos.length === 0) {
+    bd.innerHTML = 'Todos os fatores em neutro — fator combinado: <strong>1.00×</strong>';
+    return;
+  }
+  const fator = getFatorValor();
+  const partes = MULTIPLICADORES.map(m => {
+    const opt = m.opts[m.sel];
+    const pct = opt.x < 1
+      ? `<span style="color:#f08080">−${((1 - opt.x) * 100).toFixed(0)}%</span>`
+      : opt.x > 1
+        ? `<span style="color:#8ef5a8">+${((opt.x - 1) * 100).toFixed(0)}%</span>`
+        : `<span style="color:#555">0%</span>`;
+    return `${m.label}: ${pct}`;
+  }).join(' &nbsp;·&nbsp; ');
+  bd.innerHTML = `${partes}<br><strong>Fator combinado: ${fator.toFixed(3)}×</strong>`;
+}
+
+// ── HELPERS ────────────────────────────────────────────────────
+function getDias() {
+  return escopoRows.filter(r => r.idx >= 0).reduce((s, r) => s + ESCOPOS[r.idx].dias, 0);
+}
+
+function fmt(v) {
+  if (v === null || v === undefined || isNaN(v)) return 'R$ —';
+  return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function set(id, val) {
+  const e = document.getElementById(id);
+  if (e) e.textContent = val;
+}
+
+// ── CALCULAR ───────────────────────────────────────────────────
+function calcular() {
+  const projetos = Math.max(parseInt(document.getElementById('proj-andamento').value) || 1, 1);
+  const override = parseFloat(document.getElementById('ticket-override').value);
+  const dias = getDias();
+
+  // Update dias display
+  set('dias-total', dias % 1 ? dias.toFixed(1) : String(dias));
+  set('b-dias', (dias % 1 ? dias.toFixed(1) : String(dias)) + ' dias');
+
+  // M.O. por setor — FIX: renderSquad chamado aqui para manter custo por pessoa atualizado
+  let mo = { Estratégia: 0, Design: 0, Gestão: 0, Comercial: 0 };
+  SQUAD.forEach((m, idx) => {
+    if (!squadSel.has(idx)) return;
+    // FIX: usa CFG.margem_dias consistentemente (era 1.15 hardcoded no PDF)
+    const custo = (m.salario / CFG.dias_uteis) * dias * (1 + CFG.margem_dias) / projetos;
+    if (mo[m.setor] !== undefined) mo[m.setor] += custo;
+    // Atualiza custo individual na UI sem re-renderizar tudo
+    const el = document.getElementById(`custo-m-${idx}`);
+    if (el) el.textContent = dias > 0 ? fmt(custo) : '';
+  });
+
+  const mo_total   = Object.values(mo).reduce((s, v) => s + v, 0);
+  const infra      = CFG.infra_mensal / projetos;
+  const gerais     = CFG.gerais_mensal / projetos;
+  const parceiros  = [...parceirosSel].reduce((s, i) => s + PARCEIROS[i].valor, 0);
+  const custo_base = mo_total + infra + gerais + parceiros;
+
+  // Piso = custo base + impostos e comissões calculados sobre o mínimo viável
+  // Usando a fórmula inversa: piso_ticket = custo_base / (1 - aliquota - comissao)
+  const piso_dedutores = CFG.aliquota + CFG.comissao_caio;
+  const piso_ticket    = piso_dedutores < 1 ? custo_base / (1 - piso_dedutores) : custo_base;
+
+  // Preço sugerido = custo_base × markup (inclui margem alvo) × fator de valor
+  const dedutores  = CFG.aliquota + CFG.comissao_caio + CFG.margem_alvo;
+  const markup     = dedutores < 1 ? 1 / (1 - dedutores) : 1;
+  const fator      = getFatorValor();
+  const preco_sug  = custo_base * markup * fator;
+
+  // Ticket final
+  const ticket     = isNaN(override) || override === 0 ? preco_sug : override;
+
+  // Impostos e comissões sobre ticket
+  const imposto    = ticket * CFG.aliquota;
+  const comissoes  = ticket * CFG.comissao_caio;
+  const custo_total= custo_base + imposto + comissoes;
+  const fat_liq    = ticket * (1 - CFG.aliquota);
+  const lucro      = ticket - custo_total;
+  const margem     = ticket > 0 ? lucro / ticket : 0;
+
+  // ── UPDATE RIGHT PANEL ──
+  set('r-preco-sug', fmt(preco_sug));
+
+  // FIX: badge aparece também quando fator < 1 (desconto)
+  const fatorBadge = document.getElementById('r-fator-badge');
+  if (fatorBadge) {
+    if (Math.abs(fator - 1) < 0.001) {
+      fatorBadge.textContent = 'Fator neutro — sem ajuste de valor';
+    } else if (fator < 1) {
+      fatorBadge.textContent = `Desconto de portfólio aplicado — fator ${fator.toFixed(3)}×`;
+    } else {
+      fatorBadge.textContent = `Fator de valor ${fator.toFixed(3)}× aplicado`;
+    }
+  }
+
+  // Piso bar — FIX: alerta visual claro quando ticket < piso
+  const pisoBar = document.getElementById('piso-bar');
+  set('r-piso', fmt(piso_ticket));
+  if (ticket > 0 && ticket < piso_ticket) {
+    pisoBar.className = 'piso-bar danger';
+    pisoBar.querySelector('span').textContent = '⛔ Ticket abaixo do piso — prejuízo garantido';
+  } else {
+    pisoBar.className = 'piso-bar';
+    pisoBar.querySelector('span').textContent = 'Piso de custo (mínimo inegociável)';
+  }
+
+  set('r-ticket',    fmt(ticket));
+  set('r-fat-liq',   fmt(fat_liq));
+  set('r-lucro',     fmt(lucro));
+  set('r-mo-est',    fmt(mo.Estratégia));
+  set('r-mo-des',    fmt(mo.Design));
+  set('r-mo-ges',    fmt(mo.Gestão));
+  set('r-mo-com',    fmt(mo.Comercial));
+  set('r-infra',     fmt(infra));
+  set('r-gerais',    fmt(gerais));
+  set('r-parceiros', fmt(parceiros));
+  set('r-imposto',   fmt(imposto));
+  set('r-comissoes', fmt(comissoes));
+  set('r-custo-total', fmt(custo_total));
+
+  // Margem badge
+  const badge    = document.getElementById('margem-block');
+  const margemEl = document.getElementById('r-margem');
+  const pct      = ticket > 0 ? (margem * 100).toFixed(1) + '%' : '—';
+  margemEl.textContent = pct;
+  if (ticket <= 0) {
+    badge.className = 'margem-block';
+    margemEl.className = 'margem-val';
+  } else if (margem >= CFG.margem_alvo) {
+    badge.className = 'margem-block';
+    margemEl.className = 'margem-val ok';
+  } else if (margem >= 0) {
+    badge.className = 'margem-block';
+    margemEl.className = 'margem-val low';
+  } else {
+    badge.className = 'margem-block';
+    margemEl.className = 'margem-val neg';
+  }
+
+  // Bottom bar
+  set('b-custo-base', fmt(custo_base));
+  set('b-fator', fator.toFixed(3) + '×');
+  set('b-custo', fmt(custo_total));
+  set('b-margem', pct);
+  set('b-ticket', fmt(ticket));
+  const lucroEl = document.getElementById('b-lucro');
+  lucroEl.textContent = fmt(lucro);
+  lucroEl.className   = 'b-val ' + (lucro >= 0 ? 'green' : 'red');
+
+  // Atualiza breakdown do fator
+  atualizarFatorBreakdown();
+}
+
+// ── PDF via PRINT ──────────────────────────────────────────────
+function gerarPDF() {
+  const cliente = document.getElementById('cliente-nome').value || 'Cliente';
+  const override = parseFloat(document.getElementById('ticket-override').value);
+  const projetos = Math.max(parseInt(document.getElementById('proj-andamento').value) || 1, 1);
+  const obs = document.getElementById('obs-text').value;
+  const dias = getDias();
+
+  const mo_por_setor = { Estratégia: 0, Design: 0, Gestão: 0, Comercial: 0 };
+  const squad_linhas = [];
+  [...squadSel].forEach(idx => {
+    const m = SQUAD[idx];
+    const c = (m.salario / CFG.dias_uteis) * dias * (1 + CFG.margem_dias) / projetos;
+    if (mo_por_setor[m.setor] !== undefined) mo_por_setor[m.setor] += c;
+    squad_linhas.push(`<tr><td>${m.nome} <span style="opacity:.5;font-size:.8em">${m.setor}</span></td><td class="num">${fmt(c)}</td></tr>`);
+  });
+
+  const mo_total   = Object.values(mo_por_setor).reduce((s,v) => s+v, 0);
+  const infra      = CFG.infra_mensal / projetos;
+  const gerais     = CFG.gerais_mensal / projetos;
+  const parceiros  = [...parceirosSel].reduce((s,i) => s + PARCEIROS[i].valor, 0);
+  const custo_base = mo_total + infra + gerais + parceiros;
+  const fator      = getFatorValor();
+  const dedutores  = CFG.aliquota + CFG.comissao_caio + CFG.margem_alvo;
+  const markup     = 1 / (1 - dedutores);
+  const preco_sug  = custo_base * markup * fator;
+  const ticket     = isNaN(override) || override === 0 ? preco_sug : override;
+  const imposto    = ticket * CFG.aliquota;
+  const comissoes  = ticket * CFG.comissao_caio;
+  const custo_tot  = custo_base + imposto + comissoes;
+  const lucro      = ticket - custo_tot;
+  const margem     = ticket > 0 ? (lucro / ticket * 100).toFixed(1) : '0.0';
+
+  const escopos_html = escopoRows.filter(r => r.idx >= 0).map(r =>
+    `<tr><td>${ESCOPOS[r.idx].nome}</td><td class="num">${ESCOPOS[r.idx].dias} dias</td></tr>`
+  ).join('');
+
+  const mults_html = MULTIPLICADORES.map(m => {
+    const opt = m.opts[m.sel];
+    const pct = opt.x < 1 ? `−${((1-opt.x)*100).toFixed(0)}%` :
+                opt.x > 1 ? `+${((opt.x-1)*100).toFixed(0)}%` : 'neutro';
+    return `<tr><td>${m.label}</td><td class="num">${opt.label} (${pct})</td></tr>`;
+  }).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8">
+<title>J&H · Orçamento · ${cliente}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; color: #111; background: #fff; }
+  @page { margin: 18mm 16mm; }
+  @media print { .no-print { display: none; } }
+
+  .header { background: #111; color: #fff; padding: 14px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .header h1 { font-size: 16px; font-weight: 700; letter-spacing: -.02em; font-family: Georgia, serif; }
+  .header-right { text-align: right; font-size: 10px; opacity: .6; line-height: 1.6; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+  .full { grid-column: 1/-1; }
+
+  section { border: 1px solid #ddd; overflow: hidden; }
+  .sec-head { background: #222; color: #fff; padding: 5px 10px; font-size: 9px; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; }
+  tr:nth-child(even) { background: #f7f7f7; }
+  td { padding: 4px 10px; border-bottom: 1px solid #eee; line-height: 1.5; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.total td { border-top: 2px solid #111; font-weight: 700; background: #111; color: #fff; }
+  tr.subtotal td { border-top: 1px solid #999; font-weight: 600; }
+
+  .resultado { background: #111; color: #fff; padding: 12px 18px; margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .res-item label { display: block; font-size: 8px; text-transform: uppercase; letter-spacing: .1em; opacity: .5; margin-bottom: 2px; }
+  .res-item .val { font-size: 14px; font-weight: 700; font-family: Georgia, serif; }
+  .res-item .val.dest { font-size: 20px; }
+
+  .obs-box { border: 1px solid #ddd; padding: 10px; margin-top: 14px; font-size: 10px; line-height: 1.6; color: #555; }
+  .obs-box strong { display: block; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: #999; margin-bottom: 4px; }
+
+  .print-btn { position: fixed; top: 12px; right: 12px; background: #111; color: #fff; border: none; padding: 8px 16px; cursor: pointer; font-size: 11px; border-radius: 3px; }
+  .print-btn:hover { background: #333; }
+  .footer { margin-top: 18px; font-size: 9px; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 8px; }
+</style>
+</head><body>
+<button class="print-btn no-print" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
+
+<div class="header">
+  <div>
+    <h1>J&H · Projeção de Precificação</h1>
+    <div style="font-size:10px;opacity:.5;margin-top:3px">Documento interno · uso restrito</div>
+  </div>
+  <div class="header-right">
+    Cliente: <strong style="color:#fff">${cliente}</strong><br>
+    Data: ${new Date().toLocaleDateString('pt-BR')}<br>
+    Projetos em andamento: ${projetos}
+  </div>
+</div>
+
+<div class="grid">
+  <section>
+    <div class="sec-head">Escopos Selecionados</div>
+    <table>
+      ${escopos_html || '<tr><td colspan="2" style="color:#aaa">Nenhum escopo selecionado</td></tr>'}
+      <tr class="subtotal"><td>Total de dias</td><td class="num">${dias % 1 ? dias.toFixed(1) : dias} dias</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <div class="sec-head">Oportunidade de Valor</div>
+    <table>
+      ${mults_html}
+      <tr class="subtotal"><td>Fator combinado</td><td class="num">${fator.toFixed(3)}×</td></tr>
+    </table>
+  </section>
+
+  ${squad_linhas.length > 0 ? `
+  <section>
+    <div class="sec-head">Squad</div>
+    <table>${squad_linhas.join('')}</table>
+  </section>` : ''}
+
+  <section class="${squad_linhas.length > 0 ? '' : 'full'}">
+    <div class="sec-head">Composição de Custos</div>
+    <table>
+      <tr><td>M.O. Interna — Estratégia</td><td class="num">${fmt(mo_por_setor.Estratégia)}</td></tr>
+      <tr><td>M.O. Interna — Design</td><td class="num">${fmt(mo_por_setor.Design)}</td></tr>
+      <tr><td>M.O. Interna — Gestão</td><td class="num">${fmt(mo_por_setor.Gestão)}</td></tr>
+      <tr><td>M.O. Interna — Comercial</td><td class="num">${fmt(mo_por_setor.Comercial)}</td></tr>
+      <tr><td>Infraestrutura (por projeto)</td><td class="num">${fmt(infra)}</td></tr>
+      <tr><td>Custos Gerais (por projeto)</td><td class="num">${fmt(gerais)}</td></tr>
+      <tr><td>Parceiros / Freelancers</td><td class="num">${fmt(parceiros)}</td></tr>
+      <tr><td>Imposto Simples Nacional (17,29%)</td><td class="num">${fmt(imposto)}</td></tr>
+      <tr><td>Comissão Caio Costa (7%)</td><td class="num">${fmt(comissoes)}</td></tr>
+      <tr class="total"><td>Custo Total do Projeto</td><td class="num">${fmt(custo_tot)}</td></tr>
+    </table>
+  </section>
+</div>
+
+<div class="resultado">
+  <div class="res-item"><label>Preço Sugerido</label><div class="val">${fmt(preco_sug)}</div></div>
+  <div class="res-item"><label>Ticket Final</label><div class="val dest">${fmt(ticket)}</div></div>
+  <div class="res-item"><label>Margem Real</label><div class="val">${margem}%</div></div>
+  <div class="res-item"><label>Lucro Real</label><div class="val">${fmt(lucro)}</div></div>
+</div>
+
+${obs && obs.trim() ? `<div class="obs-box"><strong>Observações</strong>${obs}</div>` : ''}
+
+<div class="footer">J&H · Calculadora de Precificação 2025 · Documento interno</div>
+</body></html>`);
+  win.document.close();
+}
+
+// ── RESET ──────────────────────────────────────────────────────
+function resetForm() {
+  if (!confirm('Limpar todos os dados do formulário?')) return;
+  escopoRows = []; squadSel.clear(); parceirosSel.clear();
+  MULTIPLICADORES.forEach(m => m.sel = 0);
+  document.getElementById('ticket-override').value = '';
+  document.getElementById('cliente-nome').value = '';
+  document.getElementById('proj-andamento').value = '10';
+  document.getElementById('obs-text').value = '';
+  try { localStorage.removeItem('jh_pricing'); } catch(e) {}
+  renderEscopos(); renderSquad(); renderParceiros(); renderMult(); calcular();
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+const carregou = carregarEstado();
+if (!carregou) addEscopoRow();
+renderEscopos();
+renderSquad();
+renderParceiros();
+renderMult();
+calcular();
+
+// Auto-save em inputs de texto
+['cliente-nome','ticket-override','obs-text','proj-andamento'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => { calcular(); salvarEstado(); });
+});
+</script>
+</body>
+</html>
